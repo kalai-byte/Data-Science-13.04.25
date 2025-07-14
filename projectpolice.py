@@ -10,21 +10,6 @@ from sqlalchemy import create_engine,inspect
 engine=create_engine(db_url)
 
 
-try:
-    con = ps.connect(
-        dbname="kalaidbpro",  
-        user="kalai_online",
-        password="zo0qcDMN4PGM84TQMWbAE2aQc6V2S8AA",
-        port="5432",
-        host="dpg-d1l43iqdbo4c73aki3g0-a.singapore-postgres.render.com"
-       
-    )
-    print("Connected successfully")
-except Exception as e:
-    print("Connection failed:", e)
-
-
-st.set_page_config(page_title=" Police Dashboard")
 
 #Data Cleaning
 
@@ -41,33 +26,38 @@ traffic_df.fillna({
 
 traffic_df['timestamp'] = pd.to_datetime(traffic_df['stop_date'] +' '+ traffic_df['stop_time'])
 traffic_df['stop_date']= pd.to_datetime(traffic_df['stop_date'], errors='coerce').dt.strftime('%Y-%m-%d')
-traffic_df['stop_date']= pd.to_datetime(traffic_df['stop_date'], format='%H:%M:%S', errors='coerce').dt.strftime('H:%M:%S')
 
 st.set_page_config(page_title=" Police Dashboard")
 
 
 query_list = st.selectbox("Select a Query to Run", [
-    "Total Number of  Stops"
+    "Total Number of Stops",
     "Count of Stops by Violation Type",
     "Number of Arrests vs Warnings",
-    "Average Age of Drivers Stopped",
+    "Average Age", 
     "Top 5 Most Frequent Search Types",
     "Count of Stops by Gender",
     "Most Common Violation for Arrests"
 ])
 
 query_map = {
-    "Total Number of  Stops": "SELECT COUNT(*) AS total_stops FROM traffic_stops",
+    "Total Number of Stops": "SELECT COUNT(*) AS total_stops FROM traffic_stops",
     "Count of Stops by Violation Type": "SELECT violation, COUNT(*) AS count FROM traffic_stops GROUP BY violation ORDER BY count DESC",
     "Number of Arrests vs Warnings": "SELECT stop_outcome, COUNT(*) AS count FROM traffic_stops GROUP BY stop_outcome",
-    "Average Age of Drivers Stopped": "SELECT AVG(driver_age) AS average_age FROM traffic_stops",
+    "Average Age": "SELECT AVG(driver_age) AS average_age FROM traffic_stops",
     "Top 5 Most Frequent Search Types": "SELECT search_type, COUNT(*) FROM traffic_stops WHERE search_type != '' GROUP BY search_type ORDER BY COUNT(*) DESC LIMIT 5",
     "Count of Stops by Gender": "SELECT driver_gender, COUNT(*) AS count FROM traffic_stops GROUP BY driver_gender",
-    "Most Common Violation for Arrests": "SELECT violation, COUNT(*) AS count FROM traffic_stops WHERE stop_outcome LIKE '%arrest%' GROUP BY violation ORDER BY count DESC LIMIT 10"
+    "Most Common Violation for Arrests": "SELECT violation, COUNT(*) AS count FROM traffic_stops WHERE stop_outcome LIKE 'arrest%' GROUP BY violation ORDER BY count DESC LIMIT 10"
 }
 
-if query_list:
+if query_list in query_map:
     sql_query = query_map[query_list]
-    result_df = pd.read_sql(sql_query, engine)
-    st.subheader(query_list)
-    st.dataframe(result_df)
+    try:
+      
+        with engine.connect() as conn:
+            result_df = pd.read_sql(sql_query, con=conn)
+            st.subheader(query_list)
+            st.dataframe(result_df)
+            st.write("Selected query:", query_list)
+    except Exception as e:
+        st.error(f"Error running query: {e}")
