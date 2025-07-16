@@ -3,19 +3,19 @@ import pandas as pd
 from sqlalchemy import create_engine, text
 import plotly.express as px
 
-# --- Config ---
+# --- Streamlit page Config ---
 st.set_page_config(page_title="SecureCheck: Police Query Dashboard", layout="wide")
 
-# --- Database Setup ---
+# --- Database Configuration  ---
 db_link = 'postgresql://kalai_online:zo0qcDMN4PGM84TQMWbAE2aQc6V2S8AA@dpg-d1l43iqdbo4c73aki3g0-a.singapore-postgres.render.com/traffic_stops'
 engine = create_engine(db_link)
 
-# --- Helper Functions ---
+# --- SQL Connection ---
 def run_query(sql: str):
     with engine.connect() as conn:
         return pd.read_sql(text(sql), conn)
 
-# --- Title & Styling ---
+# --- Streamlit Config ---
 st.markdown("""
     <h1 style='text-align: center; color: #FF6347;'>🚓 SecureCheck: Police Query Dashboard</h1>
     <hr style='border: 1px solid #aaa;'>
@@ -29,7 +29,6 @@ with col1:
 with col2:
     st.image ("C:/Users/kalai/Downloads/traffic_stops/Police3.jpg", use_container_width=True)
 
-# --- Sidebar ---
 st.sidebar.header("🔍 Query Explorer")
 query_group = st.sidebar.selectbox("Choose Category", [
     "Vehicle-Based", "Demographic-Based", "Time-Based", "Violation-Based", "Location-Based", "Complex Queries"])
@@ -249,7 +248,7 @@ queries = {
     }
 }
 
-# --- Query Execution ---
+# --- Streamlit Execution ---
 selected_query = st.selectbox("Choose Query", list(queries[query_group].keys()))
 if st.button("Run Query"):
     
