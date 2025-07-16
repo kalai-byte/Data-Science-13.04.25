@@ -226,13 +226,26 @@ queries = {
             AND driver_age IS NOT NULL
             GROUP BY country_name, driver_gender, driver_race, age_group
             ORDER BY country_name, total_stops DESC;
-            """
+            """,
+            "Top 5 Violations with Highest Arrest Rates":"""SELECT
+            violation,
+            COUNT(*) AS total_stops,
+            COUNT(*) FILTER (WHERE stop_outcome ILIKE '%arrest%') AS total_arrests,
+            ROUND(
+            100.0 * COUNT(*) FILTER (WHERE stop_outcome ILIKE '%arrest%') / NULLIF(COUNT(*), 0), 2) AS arrest_rate_percent
+            FROM traffic_stops
+            WHERE violation IS NOT NULL AND stop_outcome IS NOT NULL
+            GROUP BY violation
+            HAVING COUNT(*) > 10  -- to avoid misleading rates on rare violations
+            ORDER BY arrest_rate_percent DESC
+            LIMIT 5;"""
     }
 }
 
 # --- Query Execution ---
 selected_query = st.selectbox("Choose Query", list(queries[query_group].keys()))
 if st.button("Run Query"):
+    
     try:
         sql = queries[query_group][selected_query]
         result = run_query(sql)
@@ -250,3 +263,5 @@ if st.button("Run Query"):
     except Exception as e:
         st.error("An error occurred while executing the query.")
         st.code(str(e))
+
+
