@@ -22,6 +22,13 @@ st.markdown("""
     <p style='text-align: center; font-size:18px;'>Explore insights from traffic stop data using SQL-powered analysis.</p>
 """, unsafe_allow_html=True)
 
+col1, col2 = st.columns(2)
+with col1:
+    st.image("C:/Users/kalai/Downloads/traffic_stops/Police1.jpg", use_container_width=True)
+
+with col2:
+    st.image ("C:/Users/kalai/Downloads/traffic_stops/Police3.jpg", use_container_width=True)
+
 # --- Sidebar ---
 st.sidebar.header("🔍 Query Explorer")
 query_group = st.sidebar.selectbox("Choose Category", [
@@ -227,7 +234,7 @@ queries = {
             GROUP BY country_name, driver_gender, driver_race, age_group
             ORDER BY country_name, total_stops DESC;
             """,
-            "Top 5 Violations with Highest Arrest Rates":"""SELECT
+        "Top 5 Violations with Highest Arrest Rates":"""SELECT
             violation,
             COUNT(*) AS total_stops,
             COUNT(*) FILTER (WHERE stop_outcome ILIKE '%arrest%') AS total_arrests,
