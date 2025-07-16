@@ -206,7 +206,27 @@ queries = {
             GROUP BY violation
             HAVING COUNT(*) > 10
             ORDER BY search_rate_percent DESC, arrest_rate_percent DESC;
-       """
+       """,
+        "Driver Demographics": """SELECT
+            country_name,
+            driver_gender,
+            driver_race,
+            CASE
+            WHEN driver_age < 18 THEN '<18'
+            WHEN driver_age BETWEEN 18 AND 25 THEN '18-25'
+            WHEN driver_age BETWEEN 26 AND 40 THEN '26-40'
+            WHEN driver_age BETWEEN 41 AND 60 THEN '41-60'
+            ELSE '60+'
+            END AS age_group,
+            COUNT(*) AS total_stops
+            FROM traffic_stops
+            WHERE country_name IS NOT NULL
+            AND driver_gender IS NOT NULL
+            AND driver_race IS NOT NULL
+            AND driver_age IS NOT NULL
+            GROUP BY country_name, driver_gender, driver_race, age_group
+            ORDER BY country_name, total_stops DESC;
+            """
     }
 }
 
